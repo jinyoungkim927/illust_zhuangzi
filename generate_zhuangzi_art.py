@@ -6,6 +6,7 @@ import requests
 from PIL import Image
 import io
 from dotenv import load_dotenv  # Add this import
+import base64 # <<< Add this import
 from dataclasses import dataclass
 from typing import List, Optional
 import re
@@ -79,7 +80,7 @@ class ZhuangziArtGenerator:
         """Analyze CHAPTER text for top 3 key visual elements and rank by significance"""
         system_prompt = """You are an expert in classical Chinese philosophy and visual imagery.
         Create a JSON response analyzing the most significant visual elements from this CHAPTER text.
-        Focus on concrete objects and symbolic imagery that can be depicted without human figures."""
+        Focus on concrete objects and symbolic imagery."""
         
         # Update the user prompt to reflect chapter-level analysis
         user_prompt = """Analyze this entire chapter text and return a JSON object with an 'images' array containing the top 3 most meaningful visual elements for the chapter, each with:
@@ -109,7 +110,7 @@ class ZhuangziArtGenerator:
 
         try:
             response = self.client.chat.completions.create(
-                # Use gpt-4o-turbo for analysis
+                # Use gpt-4.1-mini for analysis
                 model="gpt-4.1-mini", 
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -162,8 +163,8 @@ class ZhuangziArtGenerator:
         
         try:
             response = self.client.chat.completions.create(
-                 # Use gpt-4o-turbo for prompt generation
-                model="gpt-4o-turbo",
+                # Use gpt-4.1-mini for prompt generation
+                model="gpt-4.1-mini",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     # Explicitly ask for JSON format in the user prompt
@@ -175,8 +176,8 @@ class ZhuangziArtGenerator:
             result = json.loads(response.choices[0].message.content)
             
             # Add style consistency reminders
-            naturalistic = result.get("naturalistic", "") + ". Style: Render in warm sepia tones with misty, dreamlike atmosphere. No text or human figures."
-            abstract = result.get("abstract", "") + ". Style: Render in amber and brown tones with flowing, ethereal qualities. No text or human figures."
+            naturalistic = result.get("naturalistic", "") + ". Style: Render in warm sepia tones with misty, dreamlike atmosphere. No text."
+            abstract = result.get("abstract", "") + ". Style: Render in amber and brown tones with flowing, ethereal qualities. No text."
             
             return naturalistic, abstract
             
@@ -184,42 +185,45 @@ class ZhuangziArtGenerator:
             print(f"Error generating prompts: {e}")
             # Fallback prompts based on the scene
             return (
-                f"A misty landscape featuring {scene['image']} in warm sepia tones, with soft edges and ethereal atmosphere. No text or human figures.",
-                f"An abstract, flowing interpretation of {scene['image']} in amber tones, inspired by Chinese calligraphy. No text or human figures."
+                f"A misty landscape featuring {scene['image']} in warm sepia tones, with soft edges and ethereal atmosphere. No text.",
+                f"An abstract, flowing interpretation of {scene['image']} in amber tones, inspired by Chinese calligraphy. No text."
             )
 
     def generate_image(self, prompt: str) -> Optional[str]:
-        """Generate an image using gpt-image-1 and return its URL"""
+        """Generate an image using gpt-image-1 and return its base64 data"""
         try:
             response = self.client.images.generate(
                 # Use the gpt-image-1 model
                 model="gpt-image-1",  
                 prompt=prompt,
                 size="1024x1024", # Check documentation for supported sizes for gpt-image-1 if needed
-                quality="medium", # Supported values: 'low', 'medium', 'high', 'auto'
+                quality="high", # Supported values: 'low', 'medium', 'high', 'auto'
                 n=1,
             )
-            image_url = response.data[0].url
-            return image_url
+            # Get the base64 encoded image data instead of URL
+            image_b64_data = response.data[0].b64_json
+            return image_b64_data
         except Exception as e:
             print(f"Error generating image: {e}")
             return None
 
-    def save_image(self, image_url, output_path):
-        """Save the generated image"""
-        if not image_url:
+    def save_image(self, image_b64_data, output_path):
+        """Save the generated image from base64 data"""
+        if not image_b64_data:
             print(f"Skipping save for {output_path} due to generation error.")
             return
         try:
-            response = requests.get(image_url, stream=True)
-            response.raise_for_status() # Raise an exception for bad status codes
-            img = Image.open(io.BytesIO(response.content))
+            # Decode base64 data
+            image_bytes = base64.b64decode(image_b64_data)
+            img = Image.open(io.BytesIO(image_bytes))
             img.save(output_path)
             print(f"Saved image to {output_path}")
-        except requests.exceptions.RequestException as e:
-            print(f"Error downloading image: {e}")
+        except base64.binascii.Error as e:
+            print(f"Error decoding base64 string: {e}")
         except IOError as e:
             print(f"Error saving image: {e}")
+        except Exception as e:
+            print(f"Unexpected error saving image: {e}")
 
     def process_chapters(self, pdf_path, output_dir):
         """Process chapters, find top 3 images per chapter, generate paired interpretations"""
@@ -271,17 +275,17 @@ class ZhuangziArtGenerator:
                         image_paths = {} # Store paths for metadata
 
                         # Generate and save naturalistic version
-                        naturalistic_url = self.generate_image(naturalistic_prompt)
-                        if naturalistic_url:
+                        naturalistic_b64_data = self.generate_image(naturalistic_prompt)
+                        if naturalistic_b64_data:
                             nat_filename = f"chapter_{chapter}_image_{rank}_naturalistic.png"
-                            self.save_image(naturalistic_url, output_path_obj / nat_filename)
+                            self.save_image(naturalistic_b64_data, output_path_obj / nat_filename)
                             image_paths['naturalistic'] = nat_filename
                         
                         # Generate and save abstract version
-                        abstract_url = self.generate_image(abstract_prompt)
-                        if abstract_url:
+                        abstract_b64_data = self.generate_image(abstract_prompt)
+                        if abstract_b64_data:
                             abs_filename = f"chapter_{chapter}_image_{rank}_abstract.png"
-                            self.save_image(abstract_url, output_path_obj / abs_filename)
+                            self.save_image(abstract_b64_data, output_path_obj / abs_filename)
                             image_paths['abstract'] = abs_filename
                         
                         # Add metadata for this image pair
