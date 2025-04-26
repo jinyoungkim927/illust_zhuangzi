@@ -1,0 +1,18 @@
+# Environment variables
+.env
+
+# Python cache and virtual environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+env/
+.venv/
+
+# Output directory (we deploy its contents separately)
+output/
+
+# OS-specific files
+.DS_Store
+Thumbs.db 

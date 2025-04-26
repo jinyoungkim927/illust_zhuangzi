@@ -1,0 +1,343 @@
+
+:root {
+    /* Color Scheme - Default Dark Mode */
+    --bg-color: #1a1a1a;
+    --text-color: #e0e0e0;
+    --primary-color: #a8d8ff; /* Accent */
+    --secondary-color: #444;
+    --header-bg: #252525;
+    --button-bg: #C87E41; /* Target orange/brown */
+    --button-text: #FFFFFF; /* White text for contrast */
+    --button-hover-bg: #b8703a; /* Darker shade for hover */
+    --button-disabled-opacity: 0.5; /* Increased opacity slightly */
+    --link-color: #a8d8ff;
+    --pane-bg: #202020;
+    --border-color: #444;
+    --description-bg: #282828;
+    --significance-reveal-text-color: #a0a0a0; /* Color for '(click to reveal)' */
+    --image-container-bg: #303030;
+
+    /* Fonts - Use EB Garamond for everything */
+    --font-body: 'EB Garamond', serif;
+    --font-ui: 'EB Garamond', serif; /* Changed from Noto Sans */
+}
+
+body.light-mode {
+    /* Light Mode Overrides */
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --primary-color: #0056b3;
+    --secondary-color: #e9ecef;
+    --header-bg: #f8f9fa;
+    --button-bg: #C87E41; /* Same orange/brown */
+    --button-text: #FFFFFF; /* White text */
+    --button-hover-bg: #b8703a; /* Darker shade */
+    --link-color: #0056b3;
+    --pane-bg: #fdfdfd;
+    --border-color: #dee2e6;
+    --description-bg: #f8f8f8;
+    --significance-reveal-text-color: #555555;
+    --image-container-bg: #f0f0f0;
+}
+
+body {
+    font-family: var(--font-body);
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    /* MODIFIED: Longer transition */
+    transition: background-color 0.6s, color 0.6s;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background-color: var(--header-bg);
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+header h1 {
+    margin: 0;
+    font-family: var(--font-ui); /* Will now use EB Garamond */
+    font-weight: 700; /* Make title bolder */
+    font-size: 1.5em;
+}
+
+#theme-toggle {
+    background: var(--button-bg);
+    border: none;
+    color: var(--button-text);
+    padding: 4px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.2s;
+    /* margin-left: 15px; Removed, handled by gap */
+    line-height: 1;
+}
+
+#theme-toggle:hover {
+    background-color: var(--button-hover-bg);
+}
+
+nav span {
+    margin-right: 10px;
+    font-family: var(--font-ui);
+}
+
+nav button {
+    margin: 0 3px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-family: var(--font-ui);
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    font-size: 0.95em;
+}
+
+nav button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+nav button[style*="bold"] {
+    font-weight: bold;
+    background-color: var(--button-hover-bg);
+    color: var(--button-text);
+    box-shadow: 0 0 4px var(--button-hover-bg);
+}
+nav button[style*="bold"]:hover {
+    background-color: var(--button-hover-bg);
+}
+
+
+.container {
+    display: flex;
+    padding: 15px;
+    gap: 20px;
+    flex-grow: 1;
+    /* Prevent container from shrinking too much */
+    min-height: 0; /* Fix potential flexbox overflow issue in some browsers */
+}
+
+.pdf-pane,
+.image-pane {
+    flex: 1;
+    background-color: var(--pane-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    /* Prevent panes from shrinking too much */
+    min-width: 0; /* Fix potential flexbox overflow issue */
+    min-height: 0;
+}
+body.dark-mode .pdf-pane,
+body.dark-mode .image-pane {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.image-pane-header {
+    display: flex;
+    justify-content: space-between; /* Adjust as needed */
+    align-items: center;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 5px;
+    gap: 10px; /* Add gap between items */
+    flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.image-pane-header h2 {
+    margin: 0;
+    border: none;
+    padding: 0;
+    font-size: 1.2em;
+    font-weight: 700;
+    white-space: nowrap; /* Prevent title wrapping */
+    flex-grow: 1; /* Allow title to take available space */
+    text-align: left;
+}
+
+
+#image-display {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0; /* Allow shrinking */
+}
+
+#image-container {
+    min-height: 300px; /* Adjusted slightly */
+    border: 1px solid var(--border-color);
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--image-container-bg);
+    position: relative;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+    flex-grow: 1;
+    overflow: hidden; /* Ensure image stays within bounds */
+}
+
+#artwork-image {
+    /* MODIFIED: Make image smaller */
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    display: block;
+    border-radius: 3px;
+}
+
+#loading-message,
+#no-image-message {
+    position: absolute;
+    text-align: center;
+    color: var(--text-color);
+    opacity: 0.7;
+    font-family: var(--font-ui);
+}
+
+/* Styles for controls now within the header */
+.controls {
+    /* margin-bottom: 10px; Removed */
+    display: flex;
+    /* justify-content: space-between; Removed */
+    align-items: center;
+    gap: 8px; /* Space between buttons */
+    flex-shrink: 0; /* Prevent controls from shrinking */
+}
+
+.controls button {
+    padding: 4px 8px; /* Slightly smaller padding */
+    cursor: pointer;
+    font-family: var(--font-ui);
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+    font-size: 1.1em; /* Adjusted size */
+    min-width: 35px; /* Adjusted min-width */
+    text-align: center;
+    line-height: 1; /* Ensure emoji fits well */
+}
+
+.controls button:hover:not(:disabled) {
+    background-color: var(--button-hover-bg);
+}
+
+.controls button:disabled {
+    cursor: not-allowed;
+    opacity: var(--button-disabled-opacity);
+    background-color: var(--secondary-color);
+}
+
+.description {
+    background-color: var(--description-bg);
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
+    /* MODIFIED: Add min-height to prevent layout shift */
+    min-height: 100px; /* Adjust value as needed based on typical significance length */
+    overflow-y: auto; /* Add scroll if content exceeds min-height when expanded */
+}
+
+.description p {
+    margin: 5px 0;
+}
+
+.description span {
+    color: var(--text-color);
+}
+
+iframe {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    width: 100%;
+    flex-grow: 1;
+    background-color: #fff; /* Keep PDF background white */
+    min-height: 300px; /* Ensure iframe has a minimum height */
+}
+
+.toggle-section {
+    cursor: pointer;
+    transition: max-height 0.4s ease-in-out;
+    max-height: 1.5em; /* Initial collapsed height */
+    overflow: hidden;
+    position: relative;
+    border-top: 1px dashed var(--border-color);
+    margin-top: 10px;
+    padding-top: 5px;
+}
+
+.toggle-section:not(.active) p {
+    visibility: hidden;
+    margin: 0;
+}
+
+.toggle-section::after {
+    content: '(click to reveal)';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding-left: 0; /* Adjusted */
+    font-size: 0.9em;
+    font-style: italic;
+    color: var(--significance-reveal-text-color);
+    opacity: 1;
+    display: block;
+    font-family: var(--font-ui);
+    pointer-events: none;
+    width: 100%;
+    line-height: 1.5em; /* Match max-height */
+}
+
+.toggle-section.active {
+    /* Allow expansion up to content height, handled by .description overflow */
+    max-height: none;
+    overflow: visible; /* Let content flow naturally */
+}
+
+.toggle-section.active p {
+    visibility: visible;
+    margin: 5px 0;
+}
+
+.toggle-section.active::after {
+    display: none;
+}
+
+footer {
+    text-align: center;
+    padding: 10px 20px;
+    margin-top: auto; /* Push footer to bottom */
+    font-size: 0.85em;
+    color: var(--secondary-color);
+    border-top: 1px solid var(--border-color);
+    background-color: var(--header-bg);
+    flex-shrink: 0;
+}
+
+footer a {
+    color: var(--link-color);
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
