@@ -4,7 +4,7 @@
 
 ![Butterfly Dream](butterfly_dream.png)
 
-As you read through the chapters in the embedded PDF viewer, the adjacent panel displays artwork inspired by the selected text.
+As you read through the chapters in the embedded PDF viewer, the adjacent panel displays artwork inspired by prominent motifs in the chapter.
 
 ## Features
 
